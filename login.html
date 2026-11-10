@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Access | SwiftMart</title>
+<style>
+:root {
+  --bg: #000000;
+  --card: #121212;
+  --bd: #262626;
+  --fg: #f5f5f5;
+  --mut: #a3a3a3;
+  --pri: #ffffff;
+  --pri-h: #e5e5e5;
+  --err: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #000000;
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.portal-card {
+  max-width: 460px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--bd);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  font-size: 20px;
+  color: #fff;
+}
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+.logo-icon span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #000;
+}
+.tabs {
+  display: flex;
+  background: #1a1a1a;
+  border: 1px solid var(--bd);
+  padding: 3px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+.tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  border: 0;
+  background: none;
+  color: var(--mut);
+  font-weight: 700;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 13.5px;
+}
+.tab.active {
+  background: #ffffff;
+  color: #000000;
+}
+.role-view { display: none; }
+.role-view.active { display: block; }
+h2 { font-size: 22px; margin-bottom: 8px; font-weight: 800; }
+p { color: var(--mut); font-size: 13.5px; line-height: 1.5; margin-bottom: 24px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 13px 20px;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: 0.2s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: #ffffff;
+  color: #000000;
+}
+.btn-primary:hover { background: #e5e5e5; }
+.btn-secondary {
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid var(--bd);
+  margin-top: 12px;
+}
+.btn-secondary:hover { border-color: #ffffff; }
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+input[type="password"] {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--bd);
+  background: #000000;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+input[type="password"]:focus {
+  border-color: #ffffff;
+}
+.err {
+  color: var(--err);
+  font-size: 12.5px;
+  margin-top: 6px;
+  font-weight: 600;
+}
+.footer-text {
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--mut);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="portal-card">
+  <div class="logo">
+    <div class="logo-icon"><span></span></div>
+    SWIFTMART
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-cust" onclick="switchTab('cust')">Customer</button>
+    <button class="tab" id="tab-admin" onclick="switchTab('admin')">Staff / Admin</button>
+  </div>
+
+  <!-- Customer View -->
+  <div class="role-view active" id="view-cust">
+    <h2>Welcome to SwiftMart</h2>
+    <p>Browse our curated catalog of electronics, contemporary apparel, and lifestyle goods with instant 5% store discount and nationwide delivery.</p>
+    <a href="/" class="btn btn-primary">Enter Storefront</a>
+  </div>
+
+  <!-- Admin View -->
+  <div class="role-view" id="view-admin">
+    <h2>Staff Authentication</h2>
+    <p>Authenticate with administrative password to manage inventory, export stock CSVs, and inspect order receipts.</p>
+    <form id="admin-form" onsubmit="handleAdminLogin(event)">
+      <div class="form-group">
+        <label for="admin-pass">Password</label>
+        <input type="password" id="admin-pass" required placeholder="Enter administrative password" autofocus>
+        <div class="err" id="auth-err"></div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="login-btn">Authenticate & Access</button>
+      <a href="/" class="btn btn-secondary">Return to Storefront</a>
+    </form>
+  </div>
+</div>
+
+<div class="footer-text">
+  SwiftMart Pure Monochrome Platform &copy; 2026
+</div>
+
+<script>
+function switchTab(role) {
+  document.getElementById('tab-cust').classList.toggle('active', role === 'cust');
+  document.getElementById('tab-admin').classList.toggle('active', role === 'admin');
+  document.getElementById('view-cust').classList.toggle('active', role === 'cust');
+  document.getElementById('view-admin').classList.toggle('active', role === 'admin');
+  if (role === 'admin') {
+    setTimeout(() => document.getElementById('admin-pass')?.focus(), 100);
+  }
+}
+
+async function handleAdminLogin(e) {
+  e.preventDefault();
+  const pass = document.getElementById('admin-pass').value.trim();
+  const errEl = document.getElementById('auth-err');
+  const btn = document.getElementById('login-btn');
+  errEl.textContent = '';
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  try {
+    const res = await fetch('/api/admin/orders', {
+      headers: { 'X-Admin': pass }
+    });
+
+    if (res.ok) {
+      try { sessionStorage.setItem('swiftmart_admin', pass); } catch(e) {}
+      try { localStorage.setItem('swiftmart_admin', pass); } catch(e) {}
+      window.location.href = '/admin';
+    } else {
+      errEl.textContent = 'Invalid administrator credentials. Access denied.';
+      document.getElementById('admin-pass').value = '';
+      document.getElementById('admin-pass').focus();
+    }
+  } catch (err) {
+    errEl.textContent = 'Network error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Authenticate & Access';
+  }
+}
+
+if (window.location.hash === '#admin') {
+  switchTab('admin');
+}
+
+// Server heartbeat
+fetch('/api/ping').catch(() => {});
+setInterval(() => fetch('/api/ping').catch(() => {}), 15000);
+</script>
+
+</body>
+</html>

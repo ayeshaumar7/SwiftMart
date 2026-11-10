@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Admin Control Panel | SwiftMart</title>
+  <style>
+    :root, [data-theme="dark"] {
+      --bg: #000000; --panel: #111111; --card: #181818; --bd: #333333; --fg: #f5f5f5; --mut: #9ca3af; --pri: #ffffff;
+      --btn-pri-bg: #ffffff; --btn-pri-fg: #000000; --btn-sec-bg: #222222; --btn-sec-fg: #ffffff; --btn-sec-bd: #555555;
+      --btn-sec-hover: #333333; --suc: #ffffff; --err: #ef4444; --sh: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    [data-theme="light"] {
+      --bg: #ffffff; --panel: #fcfcfc; --card: #f5f5f5; --bd: #d4d4d8; --fg: #0a0a0a; --mut: #52525b; --pri: #000000;
+      --btn-pri-bg: #000000; --btn-pri-fg: #ffffff; --btn-sec-bg: #ffffff; --btn-sec-fg: #000000; --btn-sec-bd: #a1a1aa;
+      --btn-sec-hover: #f4f4f5; --suc: #000000; --err: #b91c1c; --sh: 0 10px 25px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: var(--panel); border-bottom: 1px solid var(--bd); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; box-shadow: var(--sh); }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.12em; font-size: 20px; }
+    .brand span { font-size: 11px; background: var(--btn-pri-bg); color: var(--btn-pri-fg); padding: 3px 8px; border-radius: 99px; letter-spacing: normal; font-weight: 700; }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+    .btn { padding: 8px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; border: 1.5px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; transition: 0.15s ease; user-select: none; }
+    .btn-pri { background: var(--btn-pri-bg) !important; color: var(--btn-pri-fg) !important; border-color: var(--btn-pri-bg) !important; }
+    .btn-pri:hover { opacity: 0.85; }
+    .btn-sec { background: var(--btn-sec-bg) !important; color: var(--btn-sec-fg) !important; border: 1.5px solid var(--btn-sec-bd) !important; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .btn-sec:hover { background: var(--btn-sec-hover) !important; border-color: var(--btn-pri-bg) !important; }
+    .btn-danger { background: rgba(239, 68, 68, 0.12) !important; color: var(--err) !important; border: 1.5px solid rgba(239, 68, 68, 0.4) !important; }
+    .btn-danger:hover { background: var(--err) !important; color: #ffffff !important; }
+
+    /* Currency dropdown (same look as storefront) */
+    .currency-select { width: auto !important; padding: 9px 34px 9px 18px; border-radius: 99px; border: 1.5px solid var(--btn-sec-bd); background: var(--btn-sec-bg); color: var(--btn-sec-fg); font-size: 13.5px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .currency-select:hover { border-color: var(--pri); }
+
+    .container { max-width: 1400px; width: 100%; margin: 0 auto; padding: 32px; flex: 1; }
+    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--bd); margin-bottom: 28px; flex-wrap: wrap; }
+    .tab { padding: 12px 20px; font-weight: 600; font-size: 15px; color: var(--mut); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+    .tab.active { color: var(--pri); border-bottom-color: var(--pri); }
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .kpi-card { background: var(--panel); border: 1px solid var(--bd); border-radius: 18px; padding: 24px; box-shadow: var(--sh); }
+    .kpi-card small { color: var(--mut); font-weight: 600; font-size: 13px; text-transform: uppercase; }
+    .kpi-card h3 { font-size: 32px; font-weight: 800; margin-top: 8px; color: var(--fg); }
+    .kpi-card .val { font-size: 32px; font-weight: 800; margin-top: 8px; color: var(--fg); }
+
+    .panel { background: var(--panel); border: 1px solid var(--bd); border-radius: 18px; padding: 28px; margin-bottom: 28px; box-shadow: var(--sh); }
+    .panel-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--bd); gap: 12px; flex-wrap: wrap; }
+    .panel-h h2 { font-size: 20px; font-weight: 700; }
+
+    .table-wrap { overflow-x: auto; max-height: 580px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: var(--panel); padding: 12px 14px; font-weight: 600; color: var(--mut); border-bottom: 2px solid var(--bd); position: sticky; top: 0; }
+    td { padding: 14px; border-bottom: 1px solid var(--bd); }
+    tr:hover td { background: rgba(125, 125, 125, 0.03); }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+    .badge-low { background: rgba(239, 68, 68, 0.15); color: var(--err); }
+    .badge-ok { background: var(--card); color: var(--fg); border: 1px solid var(--bd); }
+
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .form-group { text-align: left; }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--mut); text-transform: uppercase; margin-bottom: 6px; }
+    input, select, textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--bd); background: var(--card); color: var(--fg); font-size: 14px; outline: none; transition: 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--pri); }
+
+    .file-box { background: var(--card); border: 2px dashed var(--bd); border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 24px; transition: 0.2s; }
+    .file-box.dragover { border-color: var(--pri); background: rgba(125, 125, 125, 0.08); }
+
+    pre { background: var(--card); color: var(--fg); border: 1px solid var(--bd); padding: 20px; border-radius: 12px; font-family: "Cascadia Code", Consolas, monospace; font-size: 13px; line-height: 1.6; max-height: 400px; overflow: auto; white-space: pre-wrap; }
+
+    #toast { position: fixed; bottom: 24px; right: 24px; background: var(--panel); color: var(--fg); border: 1px solid var(--bd); box-shadow: var(--sh); padding: 14px 24px; border-radius: 12px; font-weight: 600; display: none; z-index: 100; }
+    #toast.show { display: block; animation: fadeIn 0.2s; }
+
+    @media (max-width: 760px) {
+      header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+      .nav-actions { flex-wrap: wrap; }
+      .container { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    SWIFTMART <span>Staff Portal</span>
+  </div>
+  <div class="nav-actions">
+    <select id="currency-select" class="currency-select" onchange="changeCurrency(this.value)" aria-label="Currency">
+      <option value="PKR">PKR (Rs.)</option>
+      <option value="USD">USD ($)</option>
+      <option value="GBP">GBP (£)</option>
+      <option value="EUR">EUR (€)</option>
+    </select>
+    <button class="btn btn-sec" id="theme-btn" onclick="toggleTheme()">Theme</button>
+    <a href="/" class="btn btn-sec">&larr; Back to Storefront</a>
+    <button class="btn btn-danger" onclick="logout()">Sign Out</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchSection('overview')">Overview</button>
+    <button class="tab" onclick="switchSection('inventory')">Inventory Management</button>
+    <button class="tab" onclick="switchSection('stock-files')">Stock File Handling</button>
+    <button class="tab" onclick="switchSection('orders')">Orders & Receipts</button>
+    <button class="tab" onclick="switchSection('reviews')">Customer Reviews</button>
+  </div>
+
+  <!-- SECTION 1: OVERVIEW -->
+  <div class="tab-content active" id="sec-overview">
+    <div class="kpi-grid">
+      <div class="kpi-card"><small>Total Products</small><h3 id="kpi-products">0</h3></div>
+      <div class="kpi-card"><small>Total Stock Units</small><h3 id="kpi-stock">0</h3></div>
+      <div class="kpi-card"><small>Catalog Value (5% disc.)</small><h3 id="kpi-value">0</h3></div>
+      <div class="kpi-card"><small>Total Receipts Logged</small><h3 id="kpi-receipts">0</h3></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h2>Stock Alerts (Under 10 Units Left)</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr><th>ID</th><th>Product Name</th><th>Category</th><th>Current Stock</th><th>Price</th><th>Action</th></tr>
+          </thead>
+          <tbody id="low-stock-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: INVENTORY MANAGEMENT -->
+  <div class="tab-content" id="sec-inventory">
+    <div class="panel">
+      <div class="panel-h"><h2>Add New Catalog Item</h2></div>
+      <form id="add-form" onsubmit="submitAddProduct(event)">
+        <div class="form-grid">
+          <div class="form-group"><label>Category</label><input name="cat" required placeholder="e.g. Electronics, Clothing"></div>
+          <div class="form-group"><label>Product Name</label><input name="name" required placeholder="e.g. Wireless Ergonomic Mouse"></div>
+          <div class="form-group"><label>Brand</label><input name="brand" required placeholder="e.g. Logitech"></div>
+          <div class="form-group"><label>Original Price (USD base)</label><input name="price" type="number" step="0.01" min="1" required placeholder="79.99"></div>
+          <div class="form-group"><label>Initial Stock Count</label><input name="stock" type="number" min="0" required placeholder="50"></div>
+          <div class="form-group"><label>Available Sizes</label><input name="sizes" placeholder="S,M,L or -"></div>
+          <div class="form-group"><label>Available Colors</label><input name="colors" placeholder="Black,Grey,Silver or -"></div>
+          <div class="form-group"><label>Image URL (Optional)</label><input name="image" placeholder="https://images.unsplash.com/... or -"></div>
+        </div>
+        <button type="submit" class="btn btn-pri">+ Add Product to Database</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <h2>Active Inventory List</h2>
+        <input type="text" id="inv-search" oninput="filterInventory()" placeholder="Filter by name, brand, category..." style="max-width:300px">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr><th>ID</th><th>Image</th><th>Product</th><th>Category</th><th>Brand</th><th>Price</th><th>Discounted</th><th>Stock Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="inventory-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: STOCK FILE HANDLING -->
+  <div class="tab-content" id="sec-stock-files">
+    <div class="panel">
+      <div class="panel-h">
+        <h2>Export Stock (File Handling)</h2>
+        <a href="/api/admin/export-stock" id="export-link" class="btn btn-pri">&#128229; Download Stock CSV</a>
+      </div>
+      <p style="color:var(--mut);font-size:14px">
+        Exports the entire product catalog, live stock quantities, pricing (USD base), and variant attributes into a spreadsheet-compatible <code>.csv</code> file.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h2>Import / Bulk Restock (File Handling)</h2></div>
+      <p style="color:var(--mut);font-size:14px;margin-bottom:20px">
+        Upload a CSV or pipe-delimited file (<code>id|category|name|brand|price|stock|sizes|colors</code>) to bulk restock or import new items. Prices are in USD.
+      </p>
+      <div class="file-box" id="drop-zone">
+        <p style="margin-bottom:12px;font-weight:600">Drag and drop stock CSV file here, or click to browse</p>
+        <input type="file" id="stock-file-input" accept=".csv,.txt" style="display:none" onchange="handleFileSelect(event)">
+        <button type="button" class="btn btn-sec" onclick="document.getElementById('stock-file-input').click()">Select File from PC</button>
+        <div id="file-chosen" style="margin-top:12px;font-size:13px;color:var(--pri)"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Or Paste Raw CSV / Pipe-Separated Stock Data</label>
+        <textarea id="raw-stock" rows="6" placeholder="101|Electronics|Sony Headphones|Sony|129|50|-|Black,Silver&#10;102|Electronics|Gaming Laptop|Asus|1299|15|-|Black"></textarea>
+      </div>
+      <button type="button" class="btn btn-pri" onclick="uploadStockData()">Upload & Process Stock Data</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: ORDERS & RECEIPTS -->
+  <div class="tab-content" id="sec-orders">
+    <div class="panel">
+      <div class="panel-h">
+        <h2>Order Audit File Handling</h2>
+        <a href="/api/admin/download-audit" id="audit-download-link" class="btn btn-pri">&#128229; Download Complete Audit Log (.txt)</a>
+      </div>
+      <p style="color:var(--mut);font-size:14px;margin-bottom:16px">
+        Official immutable order ledger record stored locally in <code>data/order_audit.txt</code>. Receipt totals are recorded in USD.
+      </p>
+      <pre id="audit-pre">Loading order audit ledger...</pre>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><h2>Archived Customer Receipts</h2></div>
+      <p style="color:var(--mut);font-size:14px;margin-bottom:16px">
+        Each completed customer order produces an individual receipt file stored in <code>data/receipts/</code>.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Receipt / Order ID</th><th>Format</th><th>Action</th></tr></thead>
+          <tbody id="receipts-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: CUSTOMER REVIEWS & GROQ AI CONFIG -->
+  <div class="tab-content" id="sec-reviews">
+    <div class="kpi-grid">
+      <div class="kpi-card"><small>Total Customer Reviews</small><div class="val" id="kpi-rev-total">0</div></div>
+      <div class="kpi-card"><small>Average Product Rating</small><div class="val" id="kpi-rev-avg">5.0 ★</div></div>
+      <div class="kpi-card"><small>5-Star Reviews</small><div class="val" id="kpi-rev-fives">0</div></div>
+      <div class="kpi-card"><small>Reviewed Products</small><div class="val" id="kpi-rev-prods">0</div></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:24px">
+      <div class="panel-h">
+        <h2>Groq AI Currency Exchange Integration</h2>
+        <span class="badge badge-ok">Model: openai/gpt-oss-20b</span>
+      </div>
+      <p style="color:var(--mut);font-size:14px;margin-bottom:16px">
+        The currency dropdown in the header converts prices into PKR (default), USD, GBP, and EUR. Provide your Groq API Key below to fetch live exchange rates, or leave it blank to use the baseline rates. The key and the selected currency are shared with the storefront.
+      </p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px">
+          <input type="password" id="admin-groq-key" placeholder="Enter Groq API Key (leave empty to use default rates)" style="font-family:monospace">
+        </div>
+        <button class="btn btn-pri" type="button" onclick="saveAdminGroqKey()">Save Groq Key</button>
+        <button class="btn btn-sec" type="button" onclick="clearAdminGroqKey()">Clear Key</button>
+        <button class="btn btn-sec" type="button" onclick="testAdminGroqRates()">Test Live Rates</button>
+      </div>
+      <div id="admin-groq-status" style="margin-top:12px;font-size:13px;color:var(--mut)"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <h2>Product Reviews &amp; Testimonials</h2>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="rev-search" placeholder="Search by customer, comment, or product..." oninput="filterAdminReviews()" style="width:260px;padding:8px 12px;font-size:13px">
+          <select id="rev-star-filter" onchange="filterAdminReviews()" style="width:140px;padding:8px 12px;font-size:13px">
+            <option value="all">All Ratings</option>
+            <option value="5">5 Stars only</option>
+            <option value="4">4 Stars &amp; below</option>
+            <option value="3">3 Stars &amp; below</option>
+          </select>
+          <button class="btn btn-sec" type="button" onclick="loadAdminReviews()">&#8635; Refresh Reviews</button>
+        </div>
+      </div>
+      <p style="color:var(--mut);font-size:14px;margin-bottom:16px">
+        Customer reviews are stored locally in <code>data/reviews.txt</code>. You can review customer feedback and remove inappropriate or duplicate entries.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr>
+            <th style="width:70px">Product</th>
+            <th style="width:220px">Item Name</th>
+            <th style="width:160px">Customer</th>
+            <th style="width:110px">Rating</th>
+            <th>Feedback / Review</th>
+            <th style="width:110px">Date</th>
+            <th style="width:90px;text-align:center">Action</th>
+          </tr>
+          </thead>
+          <tbody id="reviews-tbody">
+          <tr><td colspan="7" style="text-align:center;color:var(--mut);padding:24px">Loading customer reviews...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Changing Product Image -->
+<div id="image-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(3px);z-index:99999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;" onclick="if(event.target===this)closeImageModal()">
+  <div style="background:var(--panel);border:1.5px solid var(--bd);border-radius:18px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:var(--sh);position:relative;box-sizing:border-box;opacity:1 !important;color:var(--fg);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="font-size:18px;font-weight:700">Update Product Image</h3>
+      <button type="button" class="btn btn-sec" style="padding:4px 10px;font-size:14px;cursor:pointer" onclick="closeImageModal()">✕</button>
+    </div>
+    <p id="modal-product-title" style="color:var(--mut);font-size:13px;margin-bottom:18px"></p>
+
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px">
+      <img id="modal-img-preview" src="" style="width:80px;height:80px;border-radius:12px;object-fit:cover;border:1.5px solid var(--bd);background:var(--card)" onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80'">
+      <div style="flex:1">
+        <label style="margin-bottom:6px;display:block;font-size:13px;font-weight:600">New Image URL</label>
+        <input type="url" id="modal-img-input" placeholder="https://images.unsplash.com/..." oninput="previewModalImg(this.value)" onkeydown="if(event.key==='Enter')saveProductImage()" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--fg);box-sizing:border-box;">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center">
+      <button type="button" class="btn btn-sec" style="font-size:12px;padding:6px 12px" onclick="promptChangeImage(currentEditingProductId)">Text Prompt Mode</button>
+      <div style="display:flex;gap:10px">
+        <button type="button" class="btn btn-sec" onclick="closeImageModal()">Cancel</button>
+        <button type="button" class="btn btn-pri" id="modal-img-save-btn" onclick="saveProductImage()">Save Image</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // Authentication check with resilient multi-storage & incognito fallback
+  let adminToken = '';
+  try {
+    adminToken = sessionStorage.getItem('swiftmart_admin') || localStorage.getItem('swiftmart_admin') || '';
+  } catch (e) {
+    adminToken = 'admin123';
+  }
+  if (!adminToken && window.location.protocol.startsWith('http')) {
+    window.location.href = '/login#admin';
+  }
+
+  let products = [];
+  let allReceipts = [];
+
+  // ===== Currency engine (same storage keys as the storefront, so both stay in sync) =====
+  const GROQ_MODEL = 'MODEL HERE';
+  const GROQ_URL = 'API KEY HERE';
+  let currentCurrency = 'PKR';
+  try { currentCurrency = localStorage.getItem('swiftmart_currency') || 'PKR'; } catch (e) {}
+  if (!['PKR', 'USD', 'GBP', 'EUR'].includes(currentCurrency)) currentCurrency = 'PKR';
+
+  const currencyRates = {
+    PKR: { symbol: 'Rs. ', rate: 278.50, format: (v) => `Rs. ${Math.round(v).toLocaleString()}` },
+    USD: { symbol: '$',    rate: 1.0,    format: (v) => `$${v.toFixed(2)}` },
+    GBP: { symbol: '£',    rate: 0.79,   format: (v) => `£${v.toFixed(2)}` },
+    EUR: { symbol: '€',    rate: 0.92,   format: (v) => `€${v.toFixed(2)}` }
+  };
+
+  function formatCurrency(usd) {
+    const c = currencyRates[currentCurrency] || currencyRates.PKR;
+    return c.format((Number(usd) || 0) * c.rate);
+  }
+
+  function changeCurrency(code) {
+    if (!currencyRates[code]) return;
+    currentCurrency = code;
+    try { localStorage.setItem('swiftmart_currency', code); } catch (e) {}
+    const sel = document.getElementById('currency-select');
+    if (sel) sel.value = code;
+    renderOverview();
+    filterInventory();
+    showToast(`Currency set to ${code} (${currencyRates[code].symbol.trim()})`);
+  }
+
+  function getGroqKey() {
+    try { return (localStorage.getItem('swiftmart_groq_key') || '').trim(); } catch (e) { return ''; }
+  }
+
+  // Calls Groq directly, or through the Java proxy (/api/groq) when direct access fails or no key is set.
+  // With no key, the proxy uses the server's own default key.
+  async function callGroq(payload) {
+    const key = getGroqKey();
+    const body = JSON.stringify(payload);
+    const proxy = () => fetch('/api/groq', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': key ? `Bearer ${key}` : 'Bearer' },
+      body
+    });
+    if (!key) return proxy();
+    try {
+      return await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+        body
+      });
+    } catch (e) {
+      return proxy();
+    }
+  }
+
+  async function fetchRatesFromGroq(showResult) {
+    const st = document.getElementById('admin-groq-status');
+    try {
+      const res = await callGroq({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: 'You are a currency exchange rate API. Output only raw valid JSON without markdown.' },
+          { role: 'user', content: 'Return a JSON object containing currency exchange rates for 1 USD against PKR, GBP, EUR. Return ONLY raw JSON like: {"PKR":278.5,"GBP":0.79,"EUR":0.92}' }
+        ],
+        temperature: 0.1,
+        max_completion_tokens: 1024
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const msg = data.choices?.[0]?.message;
+      let content = (msg?.content || '').trim();
+      if (!content && msg?.reasoning) content = msg.reasoning.trim();
+      const m = content.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('No rates in response');
+      const parsed = JSON.parse(m[0]);
+      for (const [k, raw] of Object.entries(parsed)) {
+        const v = typeof raw === 'number' ? raw : parseFloat(raw);
+        if (isNaN(v) || v <= 0) continue;
+        const up = k.toUpperCase();
+        const target = up.includes('PKR') ? 'PKR' : up.includes('GBP') ? 'GBP' : up.includes('EUR') ? 'EUR' : null;
+        if (target) currencyRates[target].rate = v;
+      }
+      renderOverview();
+      filterInventory();
+      if (showResult && st) st.innerHTML = '<span style="color:var(--suc)"><b>Groq API Success!</b> Live rates applied: PKR ' + currencyRates.PKR.rate + ', GBP ' + currencyRates.GBP.rate + ', EUR ' + currencyRates.EUR.rate + '</span>';
+      return true;
+    } catch (e) {
+      console.warn('Groq rate update error (fallback active):', e.message);
+      if (showResult && st) st.innerHTML = '<span style="color:var(--err)"><b>Groq Connection Notice:</b> ' + escapeHtmlAdmin(e.message) + ' (Pre-calibrated fallback rates remain active)</span>';
+      return false;
+    }
+  }
+
+  async function init() {
+    loadTheme();
+    setupLinks();
+    const sel = document.getElementById('currency-select');
+    if (sel) sel.value = currentCurrency;
+    await refreshData();
+    await loadAdminReviews();
+    loadAdminGroqKey();
+    fetchRatesFromGroq(false);
+  }
+
+  function setupLinks() {
+    document.getElementById('export-link').onclick = async (e) => {
+      e.preventDefault();
+      downloadWithAuth('/api/admin/export-stock', 'swiftmart_stock_export.csv');
+    };
+    document.getElementById('audit-download-link').onclick = async (e) => {
+      e.preventDefault();
+      downloadWithAuth('/api/admin/download-audit', 'order_audit.txt');
+    };
+  }
+
+  async function downloadWithAuth(url, defaultFilename) {
+    try {
+      const res = await fetch(url, { headers: { 'X-Admin': adminToken } });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = defaultFilename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Download started: ' + defaultFilename);
+    } catch (err) {
+      alert('Error downloading file: ' + err.message);
+    }
+  }
+
+  async function refreshData() {
+    try {
+      const res = await fetch('/api/products');
+      products = await res.json();
+      renderOverview();
+      filterInventory();
+      await loadAuditLog();
+      await loadReceiptsList();
+    } catch (err) {
+      showToast('Failed to load catalog data: ' + err.message);
+    }
+  }
+
+  function renderOverview() {
+    const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
+    const totalVal = products.reduce((sum, p) => sum + (p.final * p.stock), 0);
+
+    document.getElementById('kpi-products').textContent = products.length;
+    document.getElementById('kpi-stock').textContent = totalStock;
+    document.getElementById('kpi-value').textContent = formatCurrency(totalVal);
+
+    const lowStock = products.filter(p => p.stock < 10);
+    const tbody = document.getElementById('low-stock-tbody');
+    if (lowStock.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--mut);padding:24px">All items are well stocked (10+ units).</td></tr>';
+    } else {
+      tbody.innerHTML = lowStock.map(p => `
+      <tr>
+        <td>#${p.id}</td>
+        <td><b>${escapeHtmlAdmin(p.name)}</b></td>
+        <td>${escapeHtmlAdmin(p.cat)}</td>
+        <td><span class="badge badge-low">${p.stock} units remaining</span></td>
+        <td>${formatCurrency(p.final)}</td>
+        <td><button class="btn btn-sec" onclick="quickRestock(${p.id})">+ Restock</button></td>
+      </tr>
+    `).join('');
+    }
+  }
+
+  let currentEditingProductId = null;
+
+  function getAdminProductImage(p) {
+    if (p.img && p.img !== '-' && p.img.length > 5) return p.img;
+    const fallbacks = {
+      'Electronics': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80',
+      'Clothing': 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80',
+      'Shoes': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80',
+      'Bags': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=80',
+      'Watches': 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=400&q=80',
+      'Groceries': 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=80',
+      'Stationery': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80',
+      'Toys': 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=400&q=80',
+      'Furniture': 'https://images.unsplash.com/photo-1580481077195-c328a37db714?auto=format&fit=crop&w=400&q=80'
+    };
+    return fallbacks[p.cat] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80';
+  }
+
+  function openImageModal(id) {
+    try {
+      const numId = Number(id);
+      const p = products.find(x => Number(x.id) === numId) || { id: numId, name: 'Product #' + numId, brand: '', img: '' };
+      currentEditingProductId = numId;
+
+      const modal = document.getElementById('image-modal');
+      if (!modal) { promptChangeImage(numId); return; }
+
+      const titleEl = document.getElementById('modal-product-title');
+      if (titleEl) titleEl.textContent = `Editing #${p.id}: ${p.name || ''} ${p.brand ? '(' + p.brand + ')' : ''}`;
+
+      const imgUrl = (p.img && p.img !== '-') ? p.img : getAdminProductImage(p);
+      const inputEl = document.getElementById('modal-img-input');
+      if (inputEl) inputEl.value = (p.img && p.img !== '-') ? p.img : '';
+
+      previewModalImg(imgUrl);
+      modal.style.display = 'flex';
+      modal.classList.add('show');
+
+      setTimeout(() => {
+        try { if (inputEl) { inputEl.focus(); inputEl.select(); } } catch (e) {}
+      }, 60);
+    } catch (err) {
+      console.error('Modal error:', err);
+      promptChangeImage(id);
+    }
+  }
+
+  function closeImageModal() {
+    const modal = document.getElementById('image-modal');
+    if (modal) { modal.style.display = 'none'; modal.classList.remove('show'); }
+    currentEditingProductId = null;
+  }
+
+  function previewModalImg(url) {
+    const preview = document.getElementById('modal-img-preview');
+    if (!preview) return;
+    if (url && url.trim().length > 5) preview.src = url.trim();
+    else preview.src = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80';
+  }
+
+  async function promptChangeImage(id) {
+    const numId = Number(id);
+    const p = products.find(x => Number(x.id) === numId);
+    const cur = (p && p.img && p.img !== '-') ? p.img : '';
+    const val = prompt(`Enter new image URL for Product #${numId}${p ? ' (' + p.name + ')' : ''}:\n(Leave blank or enter "-" to reset)`, cur);
+    if (val === null) return;
+    try {
+      await executeImageSave(numId, val.trim());
+      closeImageModal();
+    } catch (err) {
+      alert('Failed to update image: ' + err.message);
+    }
+  }
+
+  async function saveProductImage() {
+    if (!currentEditingProductId) return;
+    const inputEl = document.getElementById('modal-img-input');
+    const newUrl = inputEl ? inputEl.value.trim() : '';
+    const btn = document.getElementById('modal-img-save-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+    try {
+      await executeImageSave(currentEditingProductId, newUrl);
+      closeImageModal();
+    } catch (err) {
+      alert('Error updating image: ' + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Image'; }
+    }
+  }
+
+  async function executeImageSave(id, newUrl) {
+    let token = 'admin123';
+    try {
+      token = adminToken || sessionStorage.getItem('swiftmart_admin') || localStorage.getItem('swiftmart_admin') || 'admin123';
+    } catch (e) {}
+
+    const postBody = 'id=' + encodeURIComponent(id) + '&image=' + encodeURIComponent(newUrl || '-');
+    const res = await fetch('/api/admin/update-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Admin': token },
+      body: postBody
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server rejected image update');
+
+    showToast(`Image updated for product #${id}!`);
+    await refreshData();
+  }
+
+  window.openImageModal = openImageModal;
+  window.closeImageModal = closeImageModal;
+  window.promptChangeImage = promptChangeImage;
+  window.saveProductImage = saveProductImage;
+  window.executeImageSave = executeImageSave;
+
+  function renderInventory(list) {
+    const tbody = document.getElementById('inventory-tbody');
+    tbody.innerHTML = list.map(p => {
+      const imgUrl = getAdminProductImage(p);
+      return `
+    <tr>
+      <td>#${p.id}</td>
+      <td>
+        <img src="${imgUrl}" alt="${escapeHtmlAdmin(p.name)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid var(--bd);background:var(--card)" onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=120&q=80'">
+      </td>
+      <td><b>${escapeHtmlAdmin(p.name)}</b></td>
+      <td>${escapeHtmlAdmin(p.cat)}</td>
+      <td>${escapeHtmlAdmin(p.brand)}</td>
+      <td>${formatCurrency(p.price)}</td>
+      <td><b style="color:var(--suc)">${formatCurrency(p.final)}</b></td>
+      <td>
+        <span class="badge ${p.stock < 10 ? 'badge-low' : 'badge-ok'}">${p.stock} in stock</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sec" style="padding:4px 8px;font-size:12px" onclick="openImageModal(${p.id})" oncontextmenu="event.preventDefault();promptChangeImage(${p.id})" title="Click to change product image (right-click for quick text prompt)">&#128444;&#65039; Change Image</button>
+          <button class="btn btn-sec" style="padding:4px 8px;font-size:12px" onclick="quickRestock(${p.id})">Restock</button>
+          <button class="btn btn-danger" style="padding:4px 8px;font-size:12px" onclick="deleteProduct(${p.id})">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `}).join('');
+  }
+
+  function filterInventory() {
+    const input = document.getElementById('inv-search');
+    const q = input ? input.value.toLowerCase().trim() : '';
+    const filtered = products.filter(p =>
+            p.name.toLowerCase().includes(q) ||
+            p.brand.toLowerCase().includes(q) ||
+            p.cat.toLowerCase().includes(q) ||
+            String(p.id).includes(q)
+    );
+    renderInventory(filtered);
+  }
+
+  async function quickRestock(id) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    const count = prompt(`Add restock units for "${p.name}" (Current stock: ${p.stock}):`, '25');
+    if (!count || isNaN(count) || parseInt(count) <= 0) return;
+
+    const newStock = p.stock + parseInt(count);
+    const line = `${p.id}|${p.cat}|${p.name}|${p.brand}|${p.price}|${newStock}|${p.sizes.join(',') || '-'}|${p.colors.join(',') || '-'}|${p.img || '-'}`;
+
+    try {
+      const res = await fetch('/api/admin/import-stock', {
+        method: 'POST',
+        headers: { 'X-Admin': adminToken, 'Content-Type': 'text/plain' },
+        body: line
+      });
+      if (res.ok) {
+        showToast(`Restocked ${p.name}! New stock: ${newStock}`);
+        await refreshData();
+      }
+    } catch (err) {
+      alert('Error restocking: ' + err.message);
+    }
+  }
+
+  async function submitAddProduct(e) {
+    e.preventDefault();
+    const form = e.target;
+    const payload = new URLSearchParams({
+      cat: form.cat.value.trim(),
+      name: form.name.value.trim(),
+      brand: form.brand.value.trim(),
+      price: form.price.value.trim(),
+      stock: form.stock.value.trim(),
+      sizes: form.sizes.value.trim() || '-',
+      colors: form.colors.value.trim() || '-',
+      image: (form.image && form.image.value.trim()) ? form.image.value.trim() : '-'
+    });
+
+    try {
+      const res = await fetch('/api/admin/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Admin': adminToken },
+        body: payload.toString()
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add item');
+
+      showToast('New product added successfully!');
+      form.reset();
+      await refreshData();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm(`Confirm deletion of product #${id}?`)) return;
+    try {
+      const res = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Admin': adminToken },
+        body: `id=${id}`
+      });
+      if (res.ok) {
+        showToast(`Product #${id} removed.`);
+        await refreshData();
+      }
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
+    }
+  }
+
+  async function loadAuditLog() {
+    const pre = document.getElementById('audit-pre');
+    try {
+      const res = await fetch('/api/admin/orders', { headers: { 'X-Admin': adminToken } });
+      const ledger = await res.text();
+      pre.innerHTML = escapeHtmlAdmin(ledger).replace(/(https:\/\/www\.google\.com\/maps\?q=[0-9.,-]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    } catch (e) {
+      pre.textContent = 'Could not load order audit ledger.';
+    }
+  }
+
+  async function loadReceiptsList() {
+    const tbody = document.getElementById('receipts-tbody');
+    try {
+      const res = await fetch('/api/admin/receipts', { headers: { 'X-Admin': adminToken } });
+      const receipts = await res.json();
+      document.getElementById('kpi-receipts').textContent = receipts.length;
+
+      if (receipts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--mut);padding:20px">No customer receipts generated yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = receipts.map(id => `
+      <tr>
+        <td><b>${id}</b></td>
+        <td><code>.txt</code></td>
+        <td>
+          <a href="/api/receipt?id=${id}" class="btn btn-sec" style="padding:5px 12px;font-size:13px" download>&#128229; Download Receipt</a>
+        </td>
+      </tr>
+    `).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="3">Failed to load receipts list.</td></tr>';
+    }
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('file-chosen').textContent = `Loaded file: ${file.name} (${file.size} bytes)`;
+    const reader = new FileReader();
+    reader.onload = (evt) => { document.getElementById('raw-stock').value = evt.target.result; };
+    reader.readAsText(file);
+  }
+
+  async function uploadStockData() {
+    const data = document.getElementById('raw-stock').value.trim();
+    if (!data) { alert('Please choose a file or paste stock lines.'); return; }
+    try {
+      const res = await fetch('/api/admin/import-stock', {
+        method: 'POST',
+        headers: { 'X-Admin': adminToken, 'Content-Type': 'text/plain; charset=utf-8' },
+        body: data
+      });
+      const json = await res.json();
+      if (res.ok) {
+        showToast(`Success! Imported / updated ${json.imported} inventory items.`);
+        document.getElementById('raw-stock').value = '';
+        document.getElementById('file-chosen').textContent = '';
+        await refreshData();
+        switchSection('inventory');
+      } else {
+        alert('Error: ' + (json.error || 'Import failed'));
+      }
+    } catch (err) {
+      alert('Server communication error: ' + err.message);
+    }
+  }
+
+  function switchSection(secId) {
+    const sections = ['overview', 'inventory', 'stock-files', 'orders', 'reviews'];
+    document.querySelectorAll('.tab').forEach((t, idx) => {
+      t.classList.toggle('active', sections[idx] === secId);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+      c.classList.toggle('active', c.id === 'sec-' + secId);
+    });
+    if (secId === 'reviews') {
+      loadAdminReviews();
+      loadAdminGroqKey();
+    }
+  }
+
+  // --- Customer Reviews & Groq Management Logic ---
+  let adminReviews = [];
+
+  async function loadAdminReviews() {
+    const tbody = document.getElementById('reviews-tbody');
+    try {
+      const res = await fetch('/api/reviews');
+      adminReviews = await res.json();
+      renderAdminReviews(adminReviews);
+      updateReviewsKPIs(adminReviews);
+    } catch (e) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--err);padding:20px">Failed to load reviews: ' + escapeHtmlAdmin(e.message) + '</td></tr>';
+    }
+  }
+
+  function updateReviewsKPIs(list) {
+    const total = list.length;
+    const fives = list.filter(r => Number(r.stars) === 5).length;
+    const avg = total > 0 ? (list.reduce((sum, r) => sum + Number(r.stars), 0) / total).toFixed(1) : '5.0';
+    const prods = new Set(list.map(r => r.productId)).size;
+
+    const totalEl = document.getElementById('kpi-rev-total');
+    const avgEl = document.getElementById('kpi-rev-avg');
+    const fivesEl = document.getElementById('kpi-rev-fives');
+    const prodsEl = document.getElementById('kpi-rev-prods');
+
+    if (totalEl) totalEl.textContent = total;
+    if (avgEl) avgEl.textContent = avg + ' ★';
+    if (fivesEl) fivesEl.textContent = fives;
+    if (prodsEl) prodsEl.textContent = prods;
+  }
+
+  function renderAdminReviews(list) {
+    const tbody = document.getElementById('reviews-tbody');
+    if (!tbody) return;
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--mut);padding:24px">No customer reviews found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(r => {
+      const p = products.find(x => x.id === r.productId);
+      const prodName = p ? p.name : ('Product #' + r.productId);
+      const n = Math.max(1, Math.min(5, Number(r.stars) || 5));
+      const stars = '★'.repeat(n) + '☆'.repeat(5 - n);
+      return `
+      <tr>
+        <td><b>#${r.productId}</b></td>
+        <td>
+          <div style="font-weight:700">${escapeHtmlAdmin(prodName)}</div>
+          <small style="color:var(--mut)">${p ? escapeHtmlAdmin(p.cat) : ''}</small>
+        </td>
+        <td><b>${escapeHtmlAdmin(r.name)}</b></td>
+        <td style="color:#d97706;font-weight:700;font-size:15px;letter-spacing:1px">${stars}</td>
+        <td><div style="max-height:60px;overflow-y:auto;line-height:1.4">${escapeHtmlAdmin(r.comment)}</div></td>
+        <td style="color:var(--mut);font-size:13px">${escapeHtmlAdmin(r.date)}</td>
+        <td style="text-align:center">
+          <button class="btn btn-danger" style="padding:4px 8px;font-size:12px" onclick="deleteAdminReview(${r.productId}, '${escapeJs(r.name)}', '${escapeJs(r.date)}', '${escapeJs(r.comment)}')">Delete</button>
+        </td>
+      </tr>
+    `;
+    }).join('');
+  }
+
+  function escapeHtmlAdmin(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Safe for use inside onclick="...'value'..."
+  function escapeJs(str) {
+    if (!str) return '';
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/[\r\n]+/g, ' ');
+  }
+
+  function filterAdminReviews() {
+    const q = (document.getElementById('rev-search')?.value || '').toLowerCase().trim();
+    const starFilter = document.getElementById('rev-star-filter')?.value || 'all';
+
+    const filtered = adminReviews.filter(r => {
+      const p = products.find(x => x.id === r.productId);
+      const prodName = p ? p.name.toLowerCase() : '';
+      const matchText = r.name.toLowerCase().includes(q) ||
+              r.comment.toLowerCase().includes(q) ||
+              prodName.includes(q) ||
+              String(r.productId).includes(q);
+
+      let matchStar = true;
+      if (starFilter === '5') matchStar = Number(r.stars) === 5;
+      else if (starFilter === '4') matchStar = Number(r.stars) <= 4;
+      else if (starFilter === '3') matchStar = Number(r.stars) <= 3;
+
+      return matchText && matchStar;
+    });
+
+    renderAdminReviews(filtered);
+  }
+
+  async function deleteAdminReview(productId, name, date, comment) {
+    if (!confirm(`Delete review from "${name}" for Product #${productId}?`)) return;
+    try {
+      let token = 'admin123';
+      try {
+        token = adminToken || sessionStorage.getItem('swiftmart_admin') || localStorage.getItem('swiftmart_admin') || 'admin123';
+      } catch (e) {}
+
+      const params = new URLSearchParams({ id: String(productId), name: name, date: date, comment: comment });
+      const res = await fetch('/api/admin/delete-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Admin': token },
+        body: params.toString()
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Review removed successfully.');
+        await loadAdminReviews();
+      } else {
+        alert('Delete failed: ' + (data.error || 'Server error'));
+      }
+    } catch (err) {
+      alert('Error communicating with server: ' + err.message);
+    }
+  }
+
+  // Groq Key Management in Admin
+  function loadAdminGroqKey() {
+    const input = document.getElementById('admin-groq-key');
+    if (input) input.value = getGroqKey();
+    updateAdminGroqStatus();
+  }
+
+  async function saveAdminGroqKey() {
+    const input = document.getElementById('admin-groq-key');
+    const val = input ? input.value.trim() : '';
+    try { localStorage.setItem('swiftmart_groq_key', val); } catch (e) {}
+    showToast(val ? 'Groq API Key saved successfully!' : 'Groq API Key cleared.');
+    updateAdminGroqStatus();
+    if (val) await fetchRatesFromGroq(true);
+  }
+
+  function clearAdminGroqKey() {
+    try { localStorage.removeItem('swiftmart_groq_key'); } catch (e) {}
+    const input = document.getElementById('admin-groq-key');
+    if (input) input.value = '';
+    showToast('Groq API Key cleared. Default exchange rates active.');
+    updateAdminGroqStatus();
+  }
+
+  function updateAdminGroqStatus() {
+    const key = getGroqKey();
+    const st = document.getElementById('admin-groq-status');
+    if (!st) return;
+    if (key) {
+      st.innerHTML = '<strong>Status:</strong> Active (Key: ' + escapeHtmlAdmin(key.substring(0, 7)) + '...' + escapeHtmlAdmin(key.slice(-4)) + ') &bull; Live rates will fetch from <code>https://api.groq.com/openai/v1/chat/completions</code> with model <code>openai/gpt-oss-20b</code>.';
+    } else {
+      st.innerHTML = '<strong>Status:</strong> No key saved. Using the server\'s default key if available, otherwise baseline rates (PKR = 278.50, USD = 1.0, GBP = 0.79, EUR = 0.92).';
+    }
+  }
+
+  async function testAdminGroqRates() {
+    const st = document.getElementById('admin-groq-status');
+    if (st) st.innerHTML = '<em>Testing Groq API connection...</em>';
+    await fetchRatesFromGroq(true);
+  }
+
+  function loadTheme() {
+    const saved = localStorage.getItem('swiftmart_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('theme-btn').textContent = saved === 'dark' ? '\u2600 Light Mode' : '\u263E Dark Mode';
+  }
+
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('swiftmart_theme', next);
+    document.getElementById('theme-btn').textContent = next === 'dark' ? '\u2600 Light Mode' : '\u263E Dark Mode';
+  }
+
+  function logout() {
+    sessionStorage.removeItem('swiftmart_admin');
+    window.location.href = '/login';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // Heartbeat to keep backend alive
+  fetch('/api/ping').catch(() => {});
+  setInterval(() => fetch('/api/ping').catch(() => {}), 15000);
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
